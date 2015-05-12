@@ -6,8 +6,20 @@ module.exports = function (grunt) {
     grunt.initConfig({
         settings: {
             src: 'src',
+            build: 'build',
             dist: 'dist',
-            libName: 'eeh-navigation'
+            libName: 'eeh-navigation',
+            docDev: 'doc/.couscous/generated/bower_components/eeh-navigation/dist'
+        },
+        copy: {
+            dev: {
+                files: [{
+                        expand: true,
+                        flatten: true,
+                        src: ['<%= settings.dist %>/*'],
+                        dest: '<%= settings.docDev %>'
+                }]
+            }
         },
         exec: {
             generateChangelog: {
@@ -30,10 +42,23 @@ module.exports = function (grunt) {
                 configFile: 'karma.conf.js'
             }
         },
+        ngAnnotate: {
+            eehNavigation: {
+                files: {
+                    '<%= settings.build %>/<%= settings.libName %>.annotated.js': [
+                        '<%= settings.src %>/eeh-translate.js',
+                        '<%= settings.src %>/eeh-navigation.js',
+                        '<%= settings.src %>/eeh-navigation-*.js',
+                        '<%= settings.src %>/*/eeh-navigation-*.js',
+                        '!<%= settings.src %>/**/*-spec.js'
+                    ]
+                }
+            }
+        },
         ngtemplates: {
             eehNavigation: {
                 cwd: '<%= settings.src %>',
-                src: 'eeh-navigation.html',
+                src: ['**/*.html'],
                 dest: '<%= settings.dist %>/eeh-navigation.tpl.js',
                 options:  {
                     url: function (url) {
@@ -46,9 +71,10 @@ module.exports = function (grunt) {
             dist: {
                 files: [{
                     expand: true,
-                    cwd: '<%= settings.src %>/scss/',
+                    cwd: '<%= settings.src %>/',
                     src: ['**/*.scss'],
                     dest: '<%= settings.dist %>',
+                    flatten: true,
                     ext: '.css'
                 }]
             }
@@ -56,7 +82,7 @@ module.exports = function (grunt) {
         watch: {
             src: {
                 files: ['src/**/*.*'],
-                tasks: ['build'],
+                tasks: ['build', 'copy:dev'],
                 options: {
                     spawn: false
                 }
@@ -66,10 +92,7 @@ module.exports = function (grunt) {
             beautify: {
                 files: {
                     '<%= settings.dist %>/<%= settings.libName %>.js': [
-                        '<%= settings.src %>/eeh-translate.js',
-                        '<%= settings.src %>/eeh-navigation.js',
-                        '<%= settings.src %>/eeh-navigation-*.js',
-                        '!<%= settings.src %>/*-spec.js'
+                        '<%= settings.build %>/<%= settings.libName %>.annotated.js'
                     ]
                 },
                 options: {
@@ -82,8 +105,7 @@ module.exports = function (grunt) {
             minify: {
                 files: {
                     '<%= settings.dist %>/<%= settings.libName %>.min.js': [
-                        '<%= settings.src %>/*.js',
-                        '!<%= settings.src %>/*-spec.js'
+                        '<%= settings.build %>/<%= settings.libName %>.annotated.js'
                     ],
                     '<%= settings.dist %>/<%= settings.libName %>.tpl.min.js': ['<%= settings.dist %>/*.tpl.js']
                 },
@@ -120,6 +142,7 @@ module.exports = function (grunt) {
     grunt.registerTask('build', [
         'sass:dist',
         'ngtemplates',
+        'ngAnnotate',
         'uglify:beautify',
         'uglify:minify'
     ]);
