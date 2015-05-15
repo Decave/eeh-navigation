@@ -5,7 +5,25 @@ var SidebarDirective = function ($window, eehNavigation) {
         restrict: 'AE',
         transclude: true,
         templateUrl: 'template/eeh-navigation/sidebar/eeh-navigation-sidebar.html',
+        scope: {
+            topOffset: '@topOffset',
+            collapsedMenuItemIconClass: '@collapsedMenuItemIconClass',
+            expandedMenuItemIconClass: '@expandedMenuItemIconClass',
+            collapsedSidebarIconClass: '@collapsedSidebarIconClass',
+            expandedSidebarIconClass: '@expandedSidebarIconClass',
+            searchIconClass: '@searchIconClass'
+        },
         link: function (scope, element) {
+            scope.topOffset = scope.topOffset || 51; // 51 is the default height of the navbar component
+            scope.collapsedMenuItemIconClass = scope.collapsedMenuItemIconClass || 'glyphicon-chevron-left';
+            scope.expandedMenuItemIconClass = scope.expandedMenuItemIconClass || 'glyphicon-chevron-down';
+            scope.collapsedSidebarIconClass = scope.collapsedSidebarIconClass || 'glyphicon-arrow-right';
+            scope.expandedSidebarIconClass = scope.expandedSidebarIconClass || 'glyphicon-arrow-left';
+            scope.searchIconClass = scope.searchIconClass || 'glyphicon-search';
+
+            scope.iconBaseClass = function () {
+                return eehNavigation.iconBaseClass();
+            };
             scope._sidebarTextCollapse = eehNavigation._sidebarTextCollapse;
             scope._sidebarSearch = eehNavigation._sidebarSearch;
             scope._sidebarMenuItems = eehNavigation._sidebarMenuItems;
@@ -26,18 +44,17 @@ var SidebarDirective = function ($window, eehNavigation) {
                 };
             };
 
-            var topOffset = 50;
             var transcludedWrapper = element.find('#eeh-navigation-page-wrapper');
             scope.$watch(getWindowDimensions, function (newValue) {
                 if (angular.isUndefined(newValue)) {
                     return;
                 }
                 var height = (newValue.innerHeight > 0) ? newValue.innerHeight : $window.screen.height;
-                height = height - topOffset;
+                height = height - scope.topOffset;
                 if (height < 1) {
                     height = 1;
                 }
-                if (height > topOffset) {
+                if (height > scope.topOffset) {
                     transcludedWrapper.css('min-height', (height) + 'px');
                 }
             }, true);

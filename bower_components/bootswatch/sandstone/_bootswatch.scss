@@ -1,4 +1,4 @@
-// Sandstone 3.3.4
+// Sandstone 3.3.2
 // Bootswatch
 // -----------------------------------------------------
 
@@ -175,13 +175,10 @@ input,
   @include box-shadow(none);
 
   .panel-heading,
-  .panel-title {
-    @extend .sandstone;
-    color: #fff;
-  }
-
+  .panel-title,
   .panel-footer {
     @extend .sandstone;
+    color: #fff;
   }
 
   &-default {
