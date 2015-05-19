@@ -2,12 +2,7 @@
 /* global MenuItem */
 
 var NavigationService = function () {
-    this._iconBaseClass = '';
-    this._sidebarSearch = {
-        isVisible: true,
-        model: '',
-        submit: function () {}
-    };
+    this._iconBaseClass = 'glyphicon';
     this._sidebarTextCollapse = {
         isVisible: true,
         isCollapsed: false
@@ -18,6 +13,7 @@ var NavigationService = function () {
         href: '',
         src: ''
     };
+    this._menuItems = {};
     this._navbarMenuItems = {};
     this._sidebarMenuItems = {};
     this._toArray = function (items) {
@@ -43,32 +39,10 @@ NavigationService.prototype.iconBaseClass = function (value) {
     return this;
 };
 
-NavigationService.prototype.searchIsVisible = function (value) {
-    if (angular.isUndefined(value)) {
-        return this._sidebarSearch.isVisible;
-    }
-    this._sidebarSearch.isVisible = value;
-    return this;
-};
 
-NavigationService.prototype.searchModel = function (value) {
-    if (angular.isUndefined(value)) {
-        return this._sidebarSearch.model;
-    }
-    this._sidebarSearch.model = value;
-    return this;
-};
-
-NavigationService.prototype.searchSubmit = function (value) {
-    if (angular.isUndefined(value)) {
-        return this._sidebarSearch.submit;
-    }
-    this._sidebarSearch.submit = value;
-    return this;
-};
 
 /**
- * Recursively map a flat array of menu items to a nested object suitable to generate HTML lists from.
+ * Recursively map a flat array of menu items to a nested object suitable to generate hierarchical HTML from.
  */
 NavigationService.prototype.buildAncestorChain = function (name, items, config) {
     var keys = name.split('.');
@@ -85,44 +59,39 @@ NavigationService.prototype.buildAncestorChain = function (name, items, config) 
     this.buildAncestorChain(keys.join('.'), items[key], config);
 };
 
-NavigationService.prototype.sidebarMenuItem = function (name, config) {
-    if (angular.isUndefined(config)) {
-        if (angular.isUndefined(this._sidebarMenuItems[name])) {
-            throw name + ' is not a sidebar menu item';
-        }
-        return this._sidebarMenuItems[name];
-    }
-    this._sidebarMenuItems[name] = new MenuItem(config);
-    return this;
-};
-
-NavigationService.prototype.sidebarMenuItems = function () {
+NavigationService.prototype.menuItemTree = function (rootMenuName) {
     var items = {};
     var self = this;
-    angular.forEach(this._sidebarMenuItems, function (config, name) {
+    var menuItemsToTransform = {};
+    if (angular.isDefined(rootMenuName)) {
+        var rootMenuNameRegex = new RegExp('^' + rootMenuName + '.');
+        angular.forEach(this._menuItems, function (menuItem, menuItemName) {
+            if (menuItemName.match(rootMenuNameRegex) !== null) {
+                menuItemsToTransform[menuItemName.replace(rootMenuNameRegex, '')] = menuItem;
+            }
+        });
+    } else {
+        menuItemsToTransform = this._menuItems;
+    }
+    angular.forEach(menuItemsToTransform, function (config, name) {
         self.buildAncestorChain(name, items, config);
     });
     return this._toArray(items);
 };
 
-NavigationService.prototype.navbarMenuItem = function (name, config) {
+NavigationService.prototype.menuItem = function (name, config) {
     if (angular.isUndefined(config)) {
-        if (angular.isUndefined(this._navbarMenuItems[name])) {
-            throw name + ' is not a navbar menu item';
+        if (angular.isUndefined(this._menuItems[name])) {
+            throw name + ' is not a menu item';
         }
-        return this._navbarMenuItems[name];
+        return this._menuItems[name];
     }
-    this._navbarMenuItems[name] = new MenuItem(config);
+    this._menuItems[name] = new MenuItem(config);
     return this;
 };
 
-NavigationService.prototype.navbarMenuItems = function () {
-    var items = {};
-    var self = this;
-    angular.forEach(this._navbarMenuItems, function (config, name) {
-        self.buildAncestorChain(name, items, config);
-    });
-    return this._toArray(items);
+NavigationService.prototype.menuItems = function () {
+    return this._menuItems;
 };
 
 NavigationService.prototype.sidebarTextCollapseIsVisible = function (value) {
@@ -144,12 +113,6 @@ NavigationService.prototype.sidebarTextCollapseIsCollapsed = function (value) {
 NavigationService.prototype.sidebarTextCollapseToggleCollapsed = function () {
     this._sidebarTextCollapse.isCollapsed = !this._sidebarTextCollapse.isCollapsed;
     return this;
-};
-
-NavigationService.prototype.isSidebarVisible = function () {
-    return this.searchIsVisible() || this.sidebarMenuItems()
-            .filter(function (item) { return item._isVisible(); })
-            .length > 0;
 };
 
 angular.module('eehNavigation').provider('eehNavigation', NavigationService);
