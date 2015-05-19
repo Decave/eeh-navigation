@@ -1,9 +1,9 @@
 angular.module('demo')
-.controller('AuthenticatedCtrl', function ($state, $window, eehNavigation) {
+.controller('AuthenticatedCtrl', function ($scope, $state, $window, eehNavigation) {
     'use strict';
-    eehNavigation.navbarMenuItem('user').text = 'Ethan';
+    eehNavigation.menuItem('menuOne.user').text = 'Ethan';
 
-    eehNavigation.navbarMenuItem('user.logout', {
+    eehNavigation.menuItem('menuOne.user.logout', {
         text: 'Logout',
         iconClass: 'glyphicon-log-out',
         click: function () {
@@ -11,7 +11,12 @@ angular.module('demo')
         }
     });
 
-    eehNavigation.sidebarMenuItem('click').click = function () {
+    eehNavigation.menuItem('menuTwo.click').click = function () {
         $window.alert('Tada');
+    };
+
+    $scope.searchModel = '';
+    $scope.searchSubmit = function () {
+        $state.go('demo.authenticated.search', { query: $scope.searchModel });
     };
 });

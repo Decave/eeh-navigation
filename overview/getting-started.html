@@ -107,12 +107,23 @@
             <h1>Getting Started</h1>
 <p>Install, include, configure.</p>
 <h2>Install (via bower)</h2>
-<pre><code>bower install eeh-navigation</code></pre>
-<h2>Include CSS</h2>
-<pre><code>&lt;link rel="stylesheet" href="bower_components/eeh-navigation/dist/eeh-navigation.css"/&gt;</code></pre>
-<h2>Include JavaScript</h2>
-<pre><code>    &lt;script src="bower_components/eeh-navigation/dist/eeh-navigation.js"&gt;&lt;/script&gt;
-    &lt;script src="bower_components/eeh-navigation/dist/eeh-navigation.tpl.js"&gt;&lt;/script&gt;</code></pre>
+<pre><code class="language-sh">bower install eeh-navigation</code></pre>
+<h2>Include Dependencies</h2>
+<p><strong>CSS</strong></p>
+<pre><code class="language-html">&lt;link rel="stylesheet" href="../bower_components/bootstrap/dist/css/bootstrap.css" /&gt;
+&lt;link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.css" /&gt;</code></pre>
+<p><strong>JavaScript</strong></p>
+<pre><code class="language-html">&lt;script src="bower_components/jquery/dist/jquery.js"&gt;&lt;/script&gt;
+&lt;script src="bower_components/angular/angular.js"&gt;&lt;/script&gt;
+&lt;script src="bower_components/angular-translate/angular-translate.js"&gt;&lt;/script&gt;
+&lt;script src="bower_components/angular-ui-router/release/angular-ui-router.js"&gt;&lt;/script&gt;
+&lt;script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"&gt;&lt;/script&gt;</code></pre>
+<h2>Include eeh-navigation Module</h2>
+<p><strong>CSS</strong></p>
+<pre><code class="language-html">&lt;link rel="stylesheet" href="bower_components/eeh-navigation/dist/eeh-navigation.css"/&gt;</code></pre>
+<p><strong>JavaScript</strong></p>
+<pre><code class="language-html">&lt;script src="bower_components/eeh-navigation/dist/eeh-navigation.js"&gt;&lt;/script&gt;
+&lt;script src="bower_components/eeh-navigation/dist/eeh-navigation.tpl.js"&gt;&lt;/script&gt;</code></pre>
 <h2>Use the &quot;eeh-navigation&quot; Directive <small>&le; v3.3</small></h2>
 <div class="alert alert-warning"><span class="fa fa-fw fa-warning"></span>The <em>eeh-navigation</em> directive is deprecated and will be removed in version 4.0.0</div>
 <p>The directive should wrap some set of nested sub controllers.</p>
@@ -136,13 +147,11 @@ It should also be in a template that is at the top of the state hierarchy.</p>
     &lt;ui-view&gt;&lt;/ui-view&gt;
 &lt;/eeh-navigation-sidebar&gt;</code></pre>
 <h2>Configuration Example</h2>
-<pre><code>angular.module('myApp', ['eehNavigation']).config(['eehNavigationProvider',
+<pre><code class="language-javascript">angular.module('myApp', ['eehNavigation']).config(['eehNavigationProvider',
 function (eehNavigationProvider) {
     // Configure navbar branding and the link to navigate to when clicked.
-    eehNavigationProvider.navbarBrand = {
-        text: 'My Product',
-        href: '/home'
-    };
+    eehNavigationProvider.navbarBrand.text = 'My Product';
+    eehNavigationProvider.navbarBrand.href = '/home';
 
     // Add a drowndown menu for user links to the navbar.
     eehNavigationProvider
