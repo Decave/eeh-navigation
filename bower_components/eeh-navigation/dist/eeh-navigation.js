@@ -3,6 +3,40 @@
     "use strict";
     angular.module("eehNavigation", [ "pascalprecht.translate" ]);
     "use strict";
+    function isMenuItemActive(menuItem, $state) {
+        if (!menuItem.hasChildren()) {
+            return angular.isDefined(menuItem.state) && $state.includes(menuItem.state);
+        }
+        var children = menuItem.children();
+        for (var i = 0; i < children.length; i++) {
+            if (angular.isDefined(children[i].state) && $state.includes(children[i].state)) {
+                return true;
+            }
+            if (isMenuItemActive(children[i], $state)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    var ActiveMenuItemDirective = function($state) {
+        return {
+            restrict: "A",
+            scope: {
+                menuItem: "=eehNavigationActiveMenuItem"
+            },
+            link: function(scope, element) {
+                var checkIsActive = function() {
+                    var isActive = isMenuItemActive(scope.menuItem, $state);
+                    element.toggleClass("active", isActive);
+                };
+                scope.$on("$stateChangeSuccess", checkIsActive);
+                checkIsActive();
+            }
+        };
+    };
+    ActiveMenuItemDirective.$inject = [ "$state" ];
+    angular.module("eehNavigation").directive("eehNavigationActiveMenuItem", ActiveMenuItemDirective);
+    "use strict";
     var MenuItem = function(config) {
         this.weight = 0;
         angular.extend(this, config);
@@ -161,29 +195,6 @@
     MenuItemContentDirective.$inject = [ "eehNavigation" ];
     angular.module("eehNavigation").directive("eehNavigationMenuItemContent", MenuItemContentDirective);
     "use strict";
-    var ActiveParentMenuItemDirective = function($state) {
-        return {
-            restrict: "A",
-            scope: {
-                menuItem: "=eehNavigationActiveMenuItem"
-            },
-            link: function(scope, element) {
-                var checkIsActive = function() {
-                    if (scope.menuItem.hasChildren()) {
-                        var isActive = scope.menuItem.children().filter(function(childMenuItem) {
-                            return angular.isDefined(childMenuItem.state) && $state.includes(childMenuItem.state);
-                        }).length > 0;
-                        element.toggleClass("active", isActive);
-                    }
-                };
-                scope.$on("$stateChangeSuccess", checkIsActive);
-                checkIsActive();
-            }
-        };
-    };
-    ActiveParentMenuItemDirective.$inject = [ "$state" ];
-    angular.module("eehNavigation").directive("eehNavigationActiveMenuItem", ActiveParentMenuItemDirective);
-    "use strict";
     var NavbarDirective = function($window, eehNavigation) {
         return {
             restrict: "AE",
@@ -256,7 +267,7 @@
     };
     angular.module("eehNavigation").directive("eehNavigationSearchInput", [ "$window", "eehNavigation", SidebarDirective ]);
     "use strict";
-    var SidebarDirective = function($window, eehNavigation) {
+    var SidebarDirective = function($document, $window, eehNavigation) {
         return {
             restrict: "AE",
             transclude: true,
@@ -319,7 +330,10 @@
                     setTextCollapseState();
                 };
                 function setTextCollapseState() {
-                    var sidebarMenuItemTextElements = element.find(".menu-item-text");
+                    var menuItemSelectorBase = "ul.sidebar-nav:not(.sidebar-nav-nested) > li > a > ";
+                    var topLevelMenuItemTextSelector = menuItemSelectorBase + "span > .menu-item-text";
+                    var topLevelSidebarArrowSelector = menuItemSelectorBase + ".sidebar-arrow";
+                    var sidebarMenuItemTextElements = element.find(topLevelMenuItemTextSelector + "," + topLevelSidebarArrowSelector);
                     var sidebarElement = element.find(".eeh-navigation-sidebar");
                     if (eehNavigation.sidebarTextCollapseIsCollapsed()) {
                         transcludedWrapper.addClass("sidebar-text-collapsed");
@@ -330,6 +344,9 @@
                         sidebarElement.removeClass("sidebar-text-collapsed");
                         sidebarMenuItemTextElements.removeClass("hidden");
                     }
+                    scope.sidebarMenuItems.forEach(function(menuItem) {
+                        menuItem.isCollapsed = true;
+                    });
                 }
                 scope.$on("$includeContentLoaded", function() {
                     setTextCollapseState();
@@ -339,10 +356,21 @@
                         return item._isVisible();
                     }).length > 0;
                 };
+                scope.topLevelMenuItemClickHandler = function(clickedMenuItem) {
+                    if (!scope._sidebarTextCollapse || !clickedMenuItem.hasChildren()) {
+                        return;
+                    }
+                    scope.sidebarMenuItems.filter(function(menuItem) {
+                        return menuItem.hasChildren() && clickedMenuItem !== menuItem;
+                    }).forEach(function(menuItem) {
+                        menuItem.isCollapsed = true;
+                    });
+                };
             }
         };
     };
-    angular.module("eehNavigation").directive("eehNavigationSidebar", [ "$window", "eehNavigation", SidebarDirective ]);
+    SidebarDirective.$inject = [ "$document", "$window", "eehNavigation" ];
+    angular.module("eehNavigation").directive("eehNavigationSidebar", SidebarDirective);
 })({}, function() {
     return this;
 }());
