@@ -13,8 +13,9 @@ var SidebarDirective = function ($document, $window, eehNavigation) {
             collapsedSidebarIconClass: '@',
             expandedSidebarIconClass: '@',
             searchInputIsVisible: '@',
-            searchInputModel: '@',
-            searchInputSubmit: '@'
+            searchInputSubmit: '=',
+            isTextCollapseButtonVisible: '@',
+            isTextCollapsed: '@'
         },
         link: function (scope, element) {
             scope.topOffset = scope.topOffset || 51; // 51 is the default height of the navbar component
@@ -22,10 +23,12 @@ var SidebarDirective = function ($document, $window, eehNavigation) {
             scope.expandedMenuItemIconClass = scope.expandedMenuItemIconClass || 'glyphicon-chevron-down';
             scope.collapsedSidebarIconClass = scope.collapsedSidebarIconClass || 'glyphicon-arrow-right';
             scope.expandedSidebarIconClass = scope.expandedSidebarIconClass || 'glyphicon-arrow-left';
+            scope.isTextCollapseButtonVisible = scope.isTextCollapseButtonVisible || true;
+            scope.isTextCollapsed = scope.isTextCollapsed || false;
+            scope.searchInputIsVisible = scope.searchInputIsVisible || true;
             scope.iconBaseClass = function () {
                 return eehNavigation.iconBaseClass();
             };
-            scope._sidebarTextCollapse = eehNavigation._sidebarTextCollapse;
             var menuItems = function () {
                 return eehNavigation.menuItems();
             };
@@ -62,7 +65,7 @@ var SidebarDirective = function ($document, $window, eehNavigation) {
             }, true);
 
             scope.toggleSidebarTextCollapse = function() {
-                eehNavigation.sidebarTextCollapseToggleCollapsed();
+                scope.isTextCollapsed = !scope.isTextCollapsed;
                 setTextCollapseState();
             };
             function setTextCollapseState() {
@@ -71,7 +74,7 @@ var SidebarDirective = function ($document, $window, eehNavigation) {
                 var topLevelSidebarArrowSelector = menuItemSelectorBase + '.sidebar-arrow';
                 var sidebarMenuItemTextElements = element.find(topLevelMenuItemTextSelector + ',' + topLevelSidebarArrowSelector);
                 var sidebarElement = element.find('.eeh-navigation-sidebar');
-                if (eehNavigation.sidebarTextCollapseIsCollapsed()) {
+                if (scope.isTextCollapsed) {
                     transcludedWrapper.addClass('sidebar-text-collapsed');
                     sidebarElement.addClass('sidebar-text-collapsed');
                     sidebarMenuItemTextElements.addClass('hidden');
@@ -103,7 +106,7 @@ var SidebarDirective = function ($document, $window, eehNavigation) {
             };
 
             scope.topLevelMenuItemClickHandler = function (clickedMenuItem) {
-                if (!scope._sidebarTextCollapse || !clickedMenuItem.hasChildren()) {
+                if (!scope.isTextCollapsed || !clickedMenuItem.hasChildren()) {
                     return;
                 }
                 scope.sidebarMenuItems
